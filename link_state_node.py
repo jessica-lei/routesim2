@@ -14,26 +14,17 @@ class Link_State_Node(Node):
 
     # Return a string
     def __str__(self):
-        """
-        is called to when the simulation wants to print a representation of the
-        node's state for debugging. This is not essential, but it may be helpful
-        to implement this function so that DUMP_NODE events print sensible
-        information. This function should return a string.
-        """
         return "Rewrite this function to define your node dump printout"
 
     # Fill in this function
     def link_has_been_updated(self, neighbor, latency):
-        """
-        is called to inform you that an outgoing link connected to your node has
-        just changed its properties. It tells you that you can reach a certain
-        neighbor (identified by an integer) with a certain latency. In response,
-        you may want to update your tables and send further messages to your
-        neighbors. This function does not have to return anything.
-        """
-        # Replace cost of immediate neighbor with new latency
-        self.link_cost_dict[self.id][neighbor] = latency
-        self.link_cost_dict[neighbor][self.id] = latency
+        # If link has been deleted
+        if latency == -1:
+            del self.link_cost_dict[self.id][neighbor]
+            del self.link_cost_dict[neighbor][self.id]
+        else:  # Replace cost of immediate neighbor with new latency
+            self.link_cost_dict[self.id][neighbor] = latency
+            self.link_cost_dict[neighbor][self.id] = latency
 
         # Run Dijkstra's and calculate new next hops
         self.update_next_hops()
@@ -87,8 +78,14 @@ class Link_State_Node(Node):
 
         # Else if link has not been observed OR current seq_num > most recent messgae
         self.link_state_msg_dict[link_key] = ls_msg
-        self.link_cost_dict[link_src][link_dst] = cost
-        self.link_cost_dict[link_dst][link_src] = cost
+        if cost == -1:  # the link has been deleted
+            # If the node thinks that this link currently exists, delete
+            if link_dst in self.link_cost_dict[link_src]:
+                del self.link_cost_dict[link_src][link_dst]
+                del self.link_cost_dict[link_dst][link_src]
+        else:
+            self.link_cost_dict[link_src][link_dst] = cost
+            self.link_cost_dict[link_dst][link_src] = cost
 
         # Run Dijkstra's and calculate new next hops
         self.update_next_hops()
@@ -132,6 +129,7 @@ class Link_State_Node(Node):
             del unvisited_node_costs[min_cost_node_id]
 
         # For each node, store the next hop
+        self.next_hop_dict = {}  # reset
         for node_id in prev_nodes:
             if node_id == self.id:
                 continue  # No need to store next hop for oneself
