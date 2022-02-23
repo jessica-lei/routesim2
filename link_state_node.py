@@ -50,13 +50,6 @@ class Link_State_Node(Node):
 
     # Fill in this function
     def process_incoming_routing_message(self, m):
-        """
-        is called when a routing message "m" arrives at a node. This message would
-        have been sent by a neighbor (more about how to do that later). The message
-        is a string. In response, you may send further routing messages using
-        self.send_to_neighbors or self.send_to_neighbor. You may also update your
-        tables. This function does not have to return anything.
-        """
         # Unpack the incoming message
         ls_msg, from_node_id = self.unpack_ls_msg(m)
         link_src, link_dst, cost, seq_num = (
@@ -95,13 +88,6 @@ class Link_State_Node(Node):
 
     # Return a neighbor, -1 if no path to destination
     def get_next_hop(self, destination):
-        """
-        is called when the simulator wants to know what your node currently thinks is
-        the next hop on the path to the destination node. You should consult your
-        routing table or whatever other mechanism you have devised and then return
-        the correct next node for reaching the destination. This function should
-        return an integer.
-        """
         return self.next_hop_dict[destination] if destination in self.next_hop_dict else -1
 
     # Uses Dijkstra's algorithm to update the next hop for each node
